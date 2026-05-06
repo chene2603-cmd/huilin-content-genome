@@ -1,0 +1,8 @@
+{
+  "name": "content_extractor",
+  "version": "1.0.0",
+  "keywords": {
+    "emotion": ["激动", "愤怒", "开心"],
+    "style": ["搞笑", "严肃", "夸张"]
+  }
+}
