@@ -1,0 +1,6 @@
+{
+  "name": "example_analyzer",
+  "version": "1.0.0",
+  "threshold": 0.75,
+  "description": "示例分析插件，基于基因平均值判断热度"
+}
