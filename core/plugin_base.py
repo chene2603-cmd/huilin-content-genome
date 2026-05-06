@@ -1,43 +1,25 @@
-"""插件基座 - 所有插件的统一接口"""
+# core/plugin_base.py
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
-import json
-import os
+from typing import Any, Dict
+from core.genome import ContentDNA
 
 
 class BasePlugin(ABC):
-    """所有能力插件的基类"""
-    
-    def __init__(self, config_path: Optional[str] = None):
-        self.config = self._load_config(config_path)
-        self.name = self.__class__.__name__
-        self.version = "1.0"
-    
+    """所有插件的抽象基类，禁止修改"""
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self.validate_config()
+
     @abstractmethod
-    async def analyze(self, dna: "ContentDNA", **kwargs) -> Dict[str, Any]:
-        """核心分析方法"""
-        pass
-    
+    async def analyze(self, dna: ContentDNA) -> Dict[str, Any]:
+        """分析内容DNA，返回结构化结果"""
+        ...
+
     @abstractmethod
-    def report(self, result: Dict[str, Any]) -> str:
-        """生成可读报告"""
+    def report(self, analysis_result: Dict[str, Any]) -> str:
+        """将分析结果转换为可读报告"""
+        ...
+
+    def validate_config(self) -> None:
+        """插件自身配置校验，可覆盖"""
         pass
-    
-    def validate_dna(self, dna: "ContentDNA") -> bool:
-        """验证DNA有效性"""
-        return dna.sample_size > 0
-    
-    def _load_config(self, path: Optional[str]) -> Dict[str, Any]:
-        if path and os.path.exists(path):
-            with open(path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        return {}
-    
-    def get_metadata(self) -> Dict[str, Any]:
-        """获得插件元数据"""
-        return {
-            "name": self.name,
-            "version": self.version,
-            "description": self.__doc__ or "",
-            "capabilities": list(self.config.get("capabilities", []))
-        }
