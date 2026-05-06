@@ -1,0 +1,15 @@
+// plugins/viral_predictor/config.json
+{
+  "weights": {
+    "gene_strength": 0.3,
+    "emotional_arousal": 0.25,
+    "format_match": 0.2,
+    "topic_trend": 0.15,
+    "performance_momentum": 0.1
+  },
+  "thresholds": {
+    "viral": 80,
+    "high": 65,
+    "moderate": 50
+  }
+}
