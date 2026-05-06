@@ -1,0 +1,9 @@
+// plugins/trend_tracker/config.json
+{
+  "tracking_dimensions": ["style", "topic", "format", "emotion"],
+  "alert_thresholds": {
+    "weight_change": 0.3,
+    "diversity_drop": 0.4,
+    "confidence_drop": 0.3
+  }
+}
