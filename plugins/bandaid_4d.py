@@ -531,4 +531,594 @@ class DNA四维分析补丁:
         elif score >= 60:
             return f"{dimension}维度表现良好，有提升空间"
         elif score >= 40:
-            return f"{d
+            return f"{dimension}维度表现一般，需要关注"
+        else:
+            return f"{dimension}维度表现薄弱，急需优化"
+    
+    def _calculate_system_health(self, system_result: Dict) -> Dict[str, Any]:
+        """计算系统健康度"""
+        scores = [dim["score"] for dim in system_result.values()]
+        
+        if not scores:
+            return {
+                "avg_score": 0,
+                "max_gap": 0,
+                "health_index": 0,
+                "balance": "未知"
+            }
+        
+        avg_score = sum(scores) / len(scores)
+        max_gap = max(scores) - min(scores) if scores else 0
+        
+        # 健康指数 = 平均分 - 最大差距 * 0.2
+        health_index = avg_score - max_gap * 0.2
+        
+        if max_gap < 20:
+            balance = "均衡"
+        elif max_gap < 40:
+            balance = "基本均衡"
+        else:
+            balance = "失衡"
+        
+        return {
+            "avg_score": round(avg_score, 1),
+            "max_gap": round(max_gap, 1),
+            "health_index": round(max(0, health_index), 1),
+            "balance": balance
+        }
+    
+    def _get_health_level(self, score: float) -> str:
+        """获取健康等级"""
+        if score >= 80:
+            return "非常健康"
+        elif score >= 60:
+            return "健康"
+        elif score >= 40:
+            return "亚健康"
+        else:
+            return "不健康"
+
+
+# ==================== 补丁应用 ====================
+
+def apply_dna_4d_patch_to_dna_class():
+    """将DNA四维分析补丁应用到ContentDNA类"""
+    
+    # 1. 在ContentDNA类中添加四维分析字段
+    original_ContentDNA = None  # 这应该从原始模块导入
+    
+    # 这里我们创建一个增强的ContentDNA类
+    class EnhancedContentDNA(original_ContentDNA if original_ContentDNA else object):
+        """增强的ContentDNA类，包含四维分析功能"""
+        
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._4d_analyzer = DNA四维分析补丁()
+            self._4d_analysis_result = None
+            self._last_4d_analysis_time = None
+        
+        def perform_4d_analysis(self) -> Dict[str, Any]:
+            """执行四维分析"""
+            if (self._4d_analysis_result is None or 
+                self._last_4d_analysis_time is None or
+                (datetime.now() - self._last_4d_analysis_time).days > 1):
+                
+                self._4d_analysis_result = self._4d_analyzer.analyze_content_dna(self)
+                self._last_4d_analysis_time = datetime.now()
+            
+            return self._4d_analysis_result
+        
+        def get_health_report(self, format: str = "dict") -> Any:
+            """获取健康报告"""
+            analysis = self.perform_4d_analysis()
+            
+            if format == "markdown":
+                return self._generate_health_markdown(analysis)
+            elif format == "json":
+                return json.dumps(analysis, ensure_ascii=False, indent=2)
+            else:
+                return analysis
+        
+        def _generate_health_markdown(self, analysis: Dict) -> str:
+            """生成Markdown格式的健康报告"""
+            lines = []
+            
+            lines.append("# 🧬 内容DNA健康分析报告")
+            lines.append("")
+            lines.append(f"**账号**: {analysis['account_id']}")
+            lines.append(f"**DNA指纹**: {analysis['dna_fingerprint']}")
+            lines.append(f"**分析时间**: {analysis['timestamp']}")
+            lines.append("")
+            
+            # 健康指数
+            health = analysis['health_metrics']
+            lines.append("## 📈 健康指数总览")
+            lines.append(f"**综合健康指数**: {health['overall_health_index']}/100")
+            lines.append(f"**健康等级**: {health['health_level']}")
+            lines.append("")
+            
+            # 分项得分
+            lines.append("### 🎯 分项得分")
+            for metric, score in health['scores'].items():
+                lines.append(f"- **{metric}**: {score:.1f}/100")
+            lines.append("")
+            
+            # 四维分析
+            lines.append("## 🧩 四维分析")
+            for system_type, system_data in analysis['four_dim_analysis'].items():
+                lines.append(f"### {system_type}")
+                lines.append(f"系统健康度: {system_data['system_health']['health_index']}/100")
+                lines.append("")
+                
+                for dim_name, dim_data in system_data['dimensions'].items():
+                    bar = "█" * (int(dim_data['score']) // 10) + "░" * (10 - int(dim_data['score']) // 10)
+                    lines.append(f"- **{dim_name}**: {bar} {dim_data['score']}/100 ({dim_data['level']})")
+                    if dim_data['hit_keywords']:
+                        lines.append(f"  命中关键词: {', '.join(dim_data['hit_keywords'])}")
+                lines.append("")
+            
+            # 洞察
+            lines.append("## 💡 核心洞察")
+            for insight in analysis['insights']:
+                severity_icon = {
+                    'error': '❌',
+                    'warning': '⚠️',
+                    'info': 'ℹ️',
+                    'success': '✅'
+                }.get(insight.get('severity', 'info'), 'ℹ️')
+                
+                lines.append(f"{severity_icon} **{insight['type']}**: {insight['content']}")
+            lines.append("")
+            
+            # 建议
+            lines.append("## ✅ 优化建议")
+            priority_icons = {
+                'high': '🔴',
+                'medium': '🟡',
+                'low': '🟢'
+            }
+            
+            for rec in analysis['recommendations']:
+                icon = priority_icons.get(rec['priority'], '⚪')
+                lines.append(f"{icon} **{rec['area']}**: {rec['action']}")
+                lines.append(f"  原因: {rec['reason']}")
+            lines.append("")
+            
+            # 警报
+            if health['alerts']:
+                lines.append("## 🚨 健康警报")
+                for alert in health['alerts']:
+                    lines.append(f"⚠️ {alert}")
+                lines.append("")
+            
+            lines.append("---")
+            lines.append(f"*由DNA四维分析引擎 v2.1生成*")
+            lines.append(f"*生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*")
+            
+            return "\n".join(lines)
+        
+        def save_health_report(self, filepath: str = None) -> str:
+            """保存健康报告"""
+            if filepath is None:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filepath = f"health_report_{self.account_id}_{timestamp}.md"
+            
+            report = self.get_health_report(format="markdown")
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(report)
+            
+            return filepath
+    
+    return EnhancedContentDNA
+
+
+# ==================== API集成补丁 ====================
+
+def patch_dna_application_api():
+    """为DNAApplication类添加健康分析API"""
+    
+    original_DNAApplication = None  # 这应该从原始模块导入
+    
+    class EnhancedDNAApplication(original_DNAApplication if original_DNAApplication else object):
+        """增强的DNAApplication类"""
+        
+        async def analyze_account_health(self, account_id: str) -> Dict[str, Any]:
+            """分析账号健康度"""
+            dna = await self.dna_db.get_latest_dna(account_id)
+            if not dna:
+                return {"error": f"账号 {account_id} 未找到DNA"}
+            
+            # 确保DNA对象是增强版本
+            if not hasattr(dna, 'perform_4d_analysis'):
+                # 动态增强
+                EnhancedDNA = apply_dna_4d_patch_to_dna_class()
+                dna = EnhancedDNA(**dna.dict())
+            
+            health_analysis = dna.perform_4d_analysis()
+            
+            return {
+                "account_id": account_id,
+                "dna_fingerprint": dna.get_dna_fingerprint(),
+                "health_analysis": health_analysis,
+                "report_url": f"/api/v1/health/report/{account_id}"
+            }
+        
+        async def generate_health_report(self, account_id: str, format: str = "markdown") -> Any:
+            """生成健康报告"""
+            dna = await self.dna_db.get_latest_dna(account_id)
+            if not dna:
+                return {"error": f"账号 {account_id} 未找到DNA"}
+            
+            # 确保DNA对象是增强版本
+            if not hasattr(dna, 'get_health_report'):
+                EnhancedDNA = apply_dna_4d_patch_to_dna_class()
+                dna = EnhancedDNA(**dna.dict())
+            
+            return dna.get_health_report(format=format)
+        
+        async def batch_health_check(self, account_ids: List[str]) -> Dict[str, Any]:
+            """批量健康检查"""
+            results = {}
+            
+            for account_id in account_ids:
+                try:
+                    health = await self.analyze_account_health(account_id)
+                    results[account_id] = health
+                except Exception as e:
+                    results[account_id] = {"error": str(e)}
+            
+            # 生成汇总报告
+            summary = self._generate_health_summary(results)
+            
+            return {
+                "batch_id": f"batch_{int(datetime.now().timestamp())}",
+                "timestamp": datetime.now().isoformat(),
+                "total_accounts": len(account_ids),
+                "successful": sum(1 for r in results.values() if "error" not in r),
+                "failed": sum(1 for r in results.values() if "error" in r),
+                "results": results,
+                "summary": summary
+            }
+        
+        def _generate_health_summary(self, results: Dict[str, Any]) -> Dict[str, Any]:
+            """生成健康汇总"""
+            successful_results = {k: v for k, v in results.items() if "error" not in v}
+            
+            if not successful_results:
+                return {"error": "没有成功的健康分析"}
+            
+            health_scores = []
+            alerts_count = 0
+            recommendations_count = 0
+            
+            for account_data in successful_results.values():
+                if "health_analysis" in account_data:
+                    health = account_data["health_analysis"]["health_metrics"]
+                    health_scores.append(health["overall_health_index"])
+                    alerts_count += len(health.get("alerts", []))
+                    
+                    recs = account_data["health_analysis"].get("recommendations", [])
+                    recommendations_count += len(recs)
+            
+            avg_health = sum(health_scores) / len(health_scores) if health_scores else 0
+            
+            return {
+                "average_health_score": round(avg_health, 2),
+                "health_distribution": {
+                    "excellent": sum(1 for s in health_scores if s >= 80),
+                    "good": sum(1 for s in health_scores if 60 <= s < 80),
+                    "fair": sum(1 for s in health_scores if 40 <= s < 60),
+                    "poor": sum(1 for s in health_scores if s < 40)
+                },
+                "total_alerts": alerts_count,
+                "total_recommendations": recommendations_count,
+                "highest_health": max(health_scores) if health_scores else 0,
+                "lowest_health": min(health_scores) if health_scores else 0
+            }
+    
+    return EnhancedDNAApplication
+
+
+# ==================== Web API补丁 ====================
+
+def patch_web_api():
+    """为Web API添加健康分析端点"""
+    
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+    import json
+    from urllib.parse import parse_qs, urlparse
+    
+    original_ContentDNAPlatform = None  # 这应该从原始模块导入
+    
+    class EnhancedContentDNAPlatform(original_ContentDNAPlatform if original_ContentDNAPlatform else object):
+        """增强的内容DNA平台"""
+        
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._4d_analyzer = DNA四维分析补丁()
+        
+        def add_health_endpoints(self, handler_class):
+            """为HTTP处理器添加健康分析端点"""
+            
+            class HealthEnhancedHandler(handler_class):
+                """增强的HTTP处理器"""
+                
+                def do_GET(self):
+                    parsed = urlparse(self.path)
+                    
+                    # 健康分析端点
+                    if parsed.path.startswith("/api/v1/health/"):
+                        self._handle_health_endpoints(parsed)
+                    else:
+                        super().do_GET()
+                
+                def do_POST(self):
+                    parsed = urlparse(self.path)
+                    
+                    if parsed.path == "/api/v1/health/batch":
+                        self._handle_batch_health()
+                    else:
+                        super().do_POST()
+                
+                def _handle_health_endpoints(self, parsed):
+                    """处理健康分析端点"""
+                    path_parts = parsed.path.strip("/").split("/")
+                    
+                    if len(path_parts) >= 4 and path_parts[3] == "analyze":
+                        # /api/v1/health/analyze?account_id=xxx
+                        params = parse_qs(parsed.query)
+                        account_id = params.get("account_id", [""])[0]
+                        
+                        if not account_id:
+                            self._json_response({"error": "缺少account_id参数"}, 400)
+                            return
+                        
+                        # 异步执行健康分析
+                        import asyncio
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        
+                        try:
+                            result = loop.run_until_complete(
+                                self.platform.dna_app.analyze_account_health(account_id)
+                            )
+                            self._json_response(result)
+                        except Exception as e:
+                            self._json_response({"error": str(e)}, 500)
+                        finally:
+                            loop.close()
+                    
+                    elif len(path_parts) >= 4 and path_parts[3] == "report":
+                        # /api/v1/health/report/{account_id}
+                        if len(path_parts) >= 5:
+                            account_id = path_parts[4]
+                            params = parse_qs(parsed.query)
+                            fmt = params.get("format", ["markdown"])[0]
+                            
+                            # 异步生成报告
+                            import asyncio
+                            loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(loop)
+                            
+                            try:
+                                result = loop.run_until_complete(
+                                    self.platform.dna_app.generate_health_report(account_id, fmt)
+                                )
+                                
+                                if fmt == "markdown":
+                                    self.send_response(200)
+                                    self.send_header("Content-Type", "text/markdown; charset=utf-8")
+                                    self.send_header("Content-Disposition", 
+                                                   f'attachment; filename="health_report_{account_id}.md"')
+                                    self.end_headers()
+                                    self.wfile.write(result.encode("utf-8"))
+                                else:
+                                    self._json_response(result)
+                            except Exception as e:
+                                self._json_response({"error": str(e)}, 500)
+                            finally:
+                                loop.close()
+                    
+                    else:
+                        self.send_error(404)
+                
+                def _handle_batch_health(self):
+                    """处理批量健康分析"""
+                    try:
+                        length = int(self.headers.get("Content-Length", 0))
+                        body = self.rfile.read(length).decode("utf-8")
+                        data = json.loads(body)
+                        account_ids = data.get("account_ids", [])
+                    except Exception as e:
+                        self._json_response({"error": f"JSON解析错误: {e}"}, 400)
+                        return
+                    
+                    if not account_ids:
+                        self._json_response({"error": "缺少account_ids参数"}, 400)
+                        return
+                    
+                    # 异步执行批量分析
+                    import asyncio
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    
+                    try:
+                        result = loop.run_until_complete(
+                            self.platform.dna_app.batch_health_check(account_ids)
+                        )
+                        self._json_response(result)
+                    except Exception as e:
+                        self._json_response({"error": str(e)}, 500)
+                    finally:
+                        loop.close()
+                
+                def _json_response(self, data, status_code=200):
+                    """返回JSON响应"""
+                    self.send_response(status_code)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.end_headers()
+                    self.wfile.write(json.dumps(data, ensure_ascii=False).encode("utf-8"))
+            
+            return HealthEnhancedHandler
+    
+    return EnhancedContentDNAPlatform
+
+
+# ==================== 主补丁应用 ====================
+
+def apply_all_patches():
+    """应用所有补丁"""
+    
+    print("=" * 60)
+    print("🧬 DNA四维分析补丁 v2.1")
+    print("📊 为内容DNA平台添加健康度分析功能")
+    print("=" * 60)
+    
+    # 1. 应用核心补丁
+    EnhancedContentDNA = apply_dna_4d_patch_to_dna_class()
+    EnhancedDNAApplication = patch_dna_application_api()
+    EnhancedContentDNAPlatform = patch_web_api()
+    
+    # 2. 创建配置检查
+    print("🔍 检查配置文件...")
+    analyzer = DNA四维分析补丁()
+    print(f"✅ 加载配置成功，包含 {len(analyzer.config.get('维度得分规则', {}))} 个系统类型")
+    
+    # 3. 显示使用说明
+    print("\n📋 补丁功能说明:")
+    print("1. 内容DNA健康度分析")
+    print("2. 四维平衡度评估")
+    print("3. 自动Markdown报告生成")
+    print("4. Web API端点扩展")
+    print("5. 批量健康检查")
+    
+    print("\n🚀 使用方法:")
+    print("1. 导入补丁: from dna_4d_patch import apply_all_patches")
+    print("2. 应用补丁: EnhancedDNA = apply_all_patches()")
+    print("3. 使用增强功能: dna.perform_4d_analysis()")
+    
+    return {
+        "EnhancedContentDNA": EnhancedContentDNA,
+        "EnhancedDNAApplication": EnhancedDNAApplication,
+        "EnhancedContentDNAPlatform": EnhancedContentDNAPlatform,
+        "DNA四维分析补丁": DNA四维分析补丁
+    }
+
+
+# ==================== 演示示例 ====================
+
+async def demo_usage():
+    """演示补丁使用方法"""
+    
+    # 应用补丁
+    patches = apply_all_patches()
+    
+    # 创建示例DNA
+    dna_data = {
+        "account_id": "shein_official",
+        "dna_version": "1.0",
+        "style_genes": [
+            {"id": "style_1", "gene_type": "style", "value": "时尚潮流", "weight": 0.8, "confidence": 0.9},
+            {"id": "style_2", "gene_type": "style", "value": "快速时尚", "weight": 0.7, "confidence": 0.8}
+        ],
+        "topic_genes": [
+            {"id": "topic_1", "gene_type": "topic", "value": "女装", "weight": 0.9, "confidence": 0.95},
+            {"id": "topic_2", "gene_type": "topic", "value": "配饰", "weight": 0.6, "confidence": 0.7}
+        ],
+        "format_genes": [
+            {"id": "format_1", "gene_type": "format", "value": "短视频", "weight": 0.85, "confidence": 0.9},
+            {"id": "format_2", "gene_type": "format", "value": "直播", "weight": 0.5, "confidence": 0.6}
+        ],
+        "emotion_genes": [
+            {"id": "emotion_1", "gene_type": "emotion", "value": "喜悦", "weight": 0.7, "confidence": 0.8},
+            {"id": "emotion_2", "gene_type": "emotion", "value": "期待", "weight": 0.6, "confidence": 0.7}
+        ],
+        "performance_traits": {
+            "avg_views": 1000000,
+            "avg_engagement_rate": 0.12,
+            "cv_views": 0.3,
+            "growth_rate": 0.15
+        }
+    }
+    
+    # 创建增强的DNA对象
+    from pydantic import BaseModel
+    from typing import List, Dict, Any, Optional
+    
+    class ContentGene(BaseModel):
+        id: str
+        gene_type: str
+        value: str
+        weight: float
+        confidence: float
+    
+    class ContentDNA(BaseModel):
+        account_id: str
+        dna_version: str
+        style_genes: List[ContentGene]
+        topic_genes: List[ContentGene]
+        format_genes: List[ContentGene]
+        emotion_genes: List[ContentGene]
+        performance_traits: Dict[str, Any]
+        
+        def get_dna_fingerprint(self) -> str:
+            import hashlib
+            dna_str = f"{self.account_id}:{self.dna_version}"
+            return hashlib.md5(dna_str.encode()).hexdigest()[:16]
+        
+        def dict(self):
+            return {
+                "account_id": self.account_id,
+                "dna_version": self.dna_version,
+                "style_genes": [g.dict() for g in self.style_genes],
+                "topic_genes": [g.dict() for g in self.topic_genes],
+                "format_genes": [g.dict() for g in self.format_genes],
+                "emotion_genes": [g.dict() for g in self.emotion_genes],
+                "performance_traits": self.performance_traits
+            }
+    
+    # 创建原始DNA
+    dna = ContentDNA(**dna_data)
+    
+    # 创建增强DNA
+    EnhancedDNA = patches["EnhancedContentDNA"]
+    
+    # 这里需要将EnhancedDNA设为ContentDNA的子类
+    class PatchedContentDNA(EnhancedDNA, ContentDNA):
+        pass
+    
+    enhanced_dna = PatchedContentDNA(**dna_data)
+    
+    # 执行四维分析
+    print("\n🧪 执行四维分析...")
+    result = enhanced_dna.perform_4d_analysis()
+    
+    print(f"✅ 分析完成，健康指数: {result['health_metrics']['overall_health_index']}")
+    print(f"📈 基因强度: {result['health_metrics']['scores']['gene_strength']:.1f}")
+    
+    # 生成报告
+    print("\n📄 生成健康报告...")
+    report = enhanced_dna.get_health_report(format="markdown")
+    
+    # 保存报告
+    report_path = enhanced_dna.save_health_report()
+    print(f"✅ 报告已保存: {report_path}")
+    
+    return enhanced_dna, result
+
+
+if __name__ == "__main__":
+    import asyncio
+    
+    print("🧬 DNA四维分析补丁演示")
+    print("=" * 50)
+    
+    # 运行演示
+    asyncio.run(demo_usage())
+    
+    print("\n✅ 补丁演示完成！")
+    print("\n📋 集成说明:")
+    print("1. 将本文件保存为 dna_4d_patch.py")
+    print("2. 在主程序中导入: from dna_4d_patch import apply_all_patches")
+    print("3. 应用补丁: EnhancedDNA = apply_all_patches()['EnhancedContentDNA']")
+    print("4. 使用增强功能: dna.perform_4d_analysis()")
