@@ -1,0 +1,6 @@
+// plugins/strategy_generator/config.json
+{
+  "strategy_dimensions": ["风格方向", "话题矩阵", "形式优化", "情感调性"],
+  "report_format": "markdown",
+  "include_competitor_insights": true
+}
