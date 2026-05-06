@@ -1,0 +1,13 @@
+// plugins/competitor_analyzer/config.json
+{
+  "dimensions": ["style", "topic", "format", "emotion"],
+  "weights": {
+    "gene_similarity": 0.4,
+    "performance_gap": 0.35,
+    "differentiation": 0.25
+  },
+  "alert_thresholds": {
+    "high_similarity": 0.8,
+    "performance_deficit": 20
+  }
+}
