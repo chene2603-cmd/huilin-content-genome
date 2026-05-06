@@ -1,0 +1,6 @@
+{
+  "name": "example_analyzer",
+  "version": "1.0.0",
+  "threshold": 0.75,
+  "enable_cache": false
+}
