@@ -1,0 +1,10 @@
+// plugins/report_exporter/config.json
+{
+  "title": "内容DNA智能分析报告",
+  "include_sections": ["health", "viral", "strategy"],
+  "export_format": "markdown",
+  "branding": {
+    "powered_by": "huilin-content-genome",
+    "version": "2.0"
+  }
+}
