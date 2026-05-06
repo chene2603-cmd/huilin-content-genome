@@ -1,0 +1,10 @@
+{
+  "name": "four_dimension",
+  "version": "1.0.0",
+  "dimensions": {
+    "商业系统": ["market_fit", "monetization"],
+    "技术产品": ["performance", "stability"],
+    "用户体验": ["emotion", "satisfaction"],
+    "内容质量": ["originality", "depth"]
+  }
+}
