@@ -1,0 +1,6 @@
+{
+  "name": "trend_predictor",
+  "version": "1.0.0",
+  "warning_threshold": 0.3,
+  "history_window": 5
+}
